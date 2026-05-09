@@ -49,7 +49,7 @@ CREATE OR REPLACE PUBLIC SYNONYM SYN_TRANSACCION FOR PRY2205_EFT.TRANSACCION_TAR
 CREATE OR REPLACE PUBLIC SYNONYM SYN_SUCURSAL FOR PRY2205_EFT.SUCURSAL;
 
 -- CASO 3.1: Informe de Análisis de Tarjetas
--- Limpieza preventiva para asegurar ejecución limpia [cite: 16]
+-- Limpieza preventiva para asegurar ejecución limpia 
 DROP TABLE T_ANALISIS_TARJETAS CASCADE CONSTRAINTS;
 DROP SEQUENCE SEQ_T_ANALISIS;
 
@@ -67,7 +67,7 @@ CREATE TABLE T_ANALISIS_TARJETAS (
 CREATE SEQUENCE SEQ_T_ANALISIS START WITH 1 INCREMENT BY 1;
 
 -- Carga de datos con reglas de negocio y reajustes 
--- Se usa subconsulta para permitir ORDER BY junto con secuencias [cite: 16]
+-- Se usa subconsulta para permitir ORDER BY junto con secuencias 
 INSERT INTO T_ANALISIS_TARJETAS (
     NUM_ANALISIS, NRO_TARJETA, TOTAL_CUOTAS, MONTO_TOTAL_TRANSA, FECHA_TRANSACCION, DIRECCION, MONTO_REAJUSTADO
 )
@@ -82,7 +82,7 @@ SELECT SEQ_T_ANALISIS.NEXTVAL, Q.* FROM (
     FROM SYN_TRANSACCION TR
     JOIN SYN_SUCURSAL S ON TR.id_sucursal = S.id_sucursal
     WHERE UPPER(SUBSTR(S.direccion, 1, 1)) = 'A' AND TR.monto_total_transaccion >= 200000
-    ORDER BY TR.nro_tarjeta ASC, 7 DESC
+    ORDER BY TR.nro_tarjeta ASC, 6 DESC
 ) Q;
 COMMIT;
 
@@ -90,12 +90,14 @@ COMMIT;
 CREATE INDEX IDX_SUCURSAL_DIR ON SUCURSAL(UPPER(SUBSTR(direccion, 1, 1)));
 CREATE INDEX IDX_TRANSACCION_MONTO ON TRANSACCION_TARJETA_DEUDOR(monto_total_transaccion);
 
--- Permisos directos al Desarrollador con opción de compartir (GRANT OPTION) [cite: 18]
+-- Permisos directos al Desarrollador con opción de compartir (GRANT OPTION) 
 GRANT SELECT ON DEUDOR TO PRY2205_EFT_DES WITH GRANT OPTION;
 GRANT SELECT ON OCUPACION TO PRY2205_EFT_DES WITH GRANT OPTION;
 GRANT SELECT ON TARJETA_DEUDOR TO PRY2205_EFT_DES WITH GRANT OPTION;
 GRANT SELECT ON CUOTA_TARJETAS TO PRY2205_EFT_DES WITH GRANT OPTION;
 
+-- Permiso directo al Consultor para leer la tabla de análisis
+GRANT SELECT ON T_ANALISIS_TARJETAS TO PRY2205_EFT_CON;
 
 -- =====================================================================
 -- PARTE 3: DESARROLLADOR (EJECUTAR COMO PRY2205_EFT_DES)
